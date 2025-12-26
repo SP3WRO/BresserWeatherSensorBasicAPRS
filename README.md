@@ -13,20 +13,21 @@ Kompilujemy program i wrzucamy do urządzenia. Diagnostyka przez monitor szerego
 Pierwsza ramka aprs idzie dopiero po 15 minutach od uruchomienia!
 
 Wiring:
-BME280
-SDA  -> GPIO2
-SCL  -> GPIO5
-3.3V -> 3.3V
-GND  -> GND
 
-CC1101:
-GDO0 -> GPIO4
-SCK  -> GPIO14
-MISO -> GPIO12
-MOSI -> GPIO13
-CS   -> GPIO15
-3.3V -> 3.3V
-GND  -> GND
+    BME280:
+    SDA  -> GPIO2
+    SCL  -> GPIO5
+    3.3V -> 3.3V
+    GND  -> GND
+
+    CC1101:
+    GDO0 -> GPIO4
+    SCK  -> GPIO14
+    MISO -> GPIO12
+    MOSI -> GPIO13
+    CS   -> GPIO15
+    3.3V -> 3.3V
+    GND  -> GND
 
 
 Program działa w pętli nieskończonej, realizując dwa główne zadania: ciągły nasłuch radia (zbieranie danych) oraz okresowe wysyłanie raportu (co 15 minut).
@@ -36,19 +37,19 @@ Oto szczegółowy opis logiki działania:
 
 ESP8266 przez 99% czasu nasłuchuje sygnałów radiowych na częstotliwości 868 MHz. Dzieje się to w funkcji loop():
 
-    Odbiór pakietu: Gdy stacja pogodowa (Bresser 7-in-1) wyśle sygnał (dzieje się to co kilkanaście sekund), moduł CC1101 go wyłapuje.
+Odbiór pakietu: Gdy stacja pogodowa (Bresser 7-in-1) wyśle sygnał (dzieje się to co kilkanaście sekund), moduł CC1101 go wyłapuje.
 
-    Wstępne przetwarzanie:
+ Wstępne przetwarzanie:
 
-        Temperatura, Wilgotność, UV, Światło są zapisywane do zmiennej tymczasowej current_wx (zawsze nadpisujemy je najświeższą wartością).
+   Temperatura, Wilgotność, UV, Światło są zapisywane do zmiennej tymczasowej current_wx (zawsze nadpisujemy je najświeższą wartością).
 
-    Matematyka wiatru (Kluczowy moment):
+Matematyka wiatru (Kluczowy moment):
 
-        Stacja wysyła prędkość wiatru w danej sekundzie. Program nie może wysłać tylko tej jednej wartości, bo wiatr jest zmienny.
+Stacja wysyła prędkość wiatru w danej sekundzie. Program nie może wysłać tylko tej jednej wartości, bo wiatr jest zmienny.
 
-        Średnia: Każdy odebrany pomiar prędkości jest dodawany do sumy (wind_speed_sum), a licznik próbek (wind_sample_count) wzrasta o 1.
+Średnia: Każdy odebrany pomiar prędkości jest dodawany do sumy (wind_speed_sum), a licznik próbek (wind_sample_count) wzrasta o 1.
 
-        Porywy (Gust): Program sprawdza, czy aktualny poryw wiatru jest większy od zapamiętanego maksimum. Jeśli tak – aktualizuje rekordzistę (wind_gust_max_period).
+Porywy (Gust): Program sprawdza, czy aktualny poryw wiatru jest większy od zapamiętanego maksimum. Jeśli tak – aktualizuje rekordzistę (wind_gust_max_period).
 
 2. Wyzwalacz czasowy (Co 15 minut)
 
@@ -57,19 +58,19 @@ Program sprawdza zegar systemowy. Gdy minie 15 minut (REPORT_INTERVAL_MS) od ost
 Oto co dzieje się w ułamku sekundy po upływie 15 minut:
 A. Obliczenie Wiatru
 
-    Średnia prędkość: Program dzieli Suma prędkości / Ilość próbek. Dzięki temu do APRS trafia rzetelna średnia z całych 15 minut, a nie przypadkowy podmuch z ostatniej sekundy.
+Średnia prędkość: Program dzieli Suma prędkości / Ilość próbek. Dzięki temu do APRS trafia rzetelna średnia z całych 15 minut, a nie przypadkowy podmuch z ostatniej sekundy.
 
-    Poryw: Pobierana jest najwyższa wartość porywu zanotowana w ciągu tych 15 minut.
+Poryw: Pobierana jest najwyższa wartość porywu zanotowana w ciągu tych 15 minut.
 
 B. Obliczenie Deszczu (Logika "Delta 1h")
 
 To jest najsprytniejsza część programu. Stacja Bresser wysyła całkowitą sumę opadów od momentu włożenia baterii (tzw. Total Rain). APRS wymaga jednak podania opadu z ostatniej godziny.
 
-    Używamy "bufora kołowego" (rain_buffer), który pamięta 4 wartości (bo 4 * 15 min = 1 godzina).
+Używamy "bufora kołowego" (rain_buffer), który pamięta 4 wartości (bo 4 * 15 min = 1 godzina).
 
-    Program bierze: Aktualny licznik deszczu MINUS Licznik deszczu zapamiętany 4 cykle temu.
+Program bierze: Aktualny licznik deszczu MINUS Licznik deszczu zapamiętany 4 cykle temu.
 
-    Wynik to dokładna ilość wody, która spadła w ciągu ostatniej godziny.
+Wynik to dokładna ilość wody, która spadła w ciągu ostatniej godziny.
 
 C. Odczyt Ciśnienia (BME280)
 
