@@ -1,18 +1,19 @@
-Uwaga, program napisany wyłącznie dla ESP8266 + CC1101 + BME280 (dla ciśnienia, którego bresser nie podaje)
+Uwaga, program napisany WYŁĄCZNIE dla ESP8266 + CC1101 + BME280 (dla ciśnienia, którego bresser nie podaje)
+Co i jak:
 
-Instalujemy Arduino IDE
-W Arduino IDE instalujemy biblioteki: BresserWeatherSensorReceiver (0.37.0) + wszystkie pakiety wymagane oraz Adafruit BME280
-Oprócz tego instalujemy płytkę ESP8266.
-Przechodzimy do C:/Users/twoja_nazwa/Documents/Arduino/libraries/BresserWeatherSensorReceiver/src
-Nadpisujemy plik WeatherSensorCfg.h
-Włączamy Arduino IDE i wybieramy:
-File > Examples > BresserWeatherSensorReceiver > BresserWeatherSensorBasic
-Usuwamy całą zawartość i wklejamy z naszego pliku BresserWeatherSensorAPRS2.ino
-Zmieniamy dane APRS i lokalizację.
-Kompilujemy program i wrzucamy do urządzenia. Diagnostyka przez monitor szeregowy na 115200. (Informacje o inicjalizacji urządzenia, odebranych pakietach, podłączeniu BME, Wi-Fi, pobraniu czasu z NTP)
-Pierwsza ramka aprs idzie dopiero po 15 minutach od uruchomienia!
+    Instalujemy Arduino IDE
+    W Arduino IDE instalujemy biblioteki: BresserWeatherSensorReceiver (0.37.0) + wszystkie pakiety wymagane oraz Adafruit BME280
+    Oprócz tego instalujemy płytkę ESP8266.
+    Przechodzimy do C:/Users/twoja_nazwa/Documents/Arduino/libraries/BresserWeatherSensorReceiver/src
+    Nadpisujemy plik WeatherSensorCfg.h
+    Włączamy Arduino IDE i wybieramy:
+    File > Examples > BresserWeatherSensorReceiver > BresserWeatherSensorBasic
+    Usuwamy całą zawartość i wklejamy z naszego pliku BresserWeatherSensorAPRS2.ino
+    Zmieniamy dane APRS i lokalizację.
+    Kompilujemy program i wrzucamy do urządzenia. Diagnostyka przez monitor szeregowy na 115200. (Informacje o inicjalizacji urządzenia, odebranych pakietach, podłączeniu BME, Wi-Fi, pobraniu czasu z NTP)
+    Pierwsza ramka aprs idzie dopiero po 15 minutach od uruchomienia!
 
-Wiring:
+Wiring (czyli okablowanie):
 
     BME280:
     SDA  -> GPIO2
