@@ -8,7 +8,7 @@ Co i jak:
     Nadpisujemy plik WeatherSensorCfg.h
     Włączamy Arduino IDE i wybieramy:
     File > Examples > BresserWeatherSensorReceiver > BresserWeatherSensorBasic
-    Usuwamy całą zawartość i wklejamy z naszego pliku BresserWeatherSensorAPRS2.ino
+    Usuwamy całą zawartość i wklejamy z naszego pliku BresserWeatherSensorBasicAPRS.ino
     Zmieniamy dane APRS i lokalizację.
     Kompilujemy program i wrzucamy do urządzenia. Diagnostyka przez monitor szeregowy na 115200. (Informacje o inicjalizacji urządzenia, odebranych pakietach, podłączeniu BME, Wi-Fi, pobraniu czasu z NTP)
     Pierwsza ramka aprs idzie dopiero po 15 minutach od uruchomienia!
