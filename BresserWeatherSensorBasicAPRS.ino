@@ -46,7 +46,7 @@ struct WeatherData {
   float wind_dir = NAN;
   float rain_total_mm = NAN;
   float uv_index = NAN;
-  float light_klx = NAN;
+  float light_klx = NAN; 
   int radio_rssi = -100;  
   bool battery_ok = true; 
   bool valid_data = false;
@@ -104,8 +104,14 @@ void send_aprs() {
     if (!isnan(p) && p > 80000.0) baro = (int)(p / 10.0);
   }
 
+  // --- OBLICZANIE NASŁONECZNIENIA ---
+  // Konwersja Lux -> W/m2 (standard APRS)
+  int lum_wm2 = 0;
+  if (!isnan(current_wx.light_klx)) {
+      lum_wm2 = (int)(current_wx.light_klx * 7.9); // 1 klx ~= 7.9 W/m2
+  }
+
   // --- BUDOWA RAMKI ---
-  // Teraz poprawnie dodajemy czas (Timestamp) po znaku @
   String ts = get_timestamp();
   String body = "@" + ts + format_lat(SITE_LAT) + "/" + format_lon(SITE_LON) + "_";
   
@@ -117,6 +123,13 @@ void send_aprs() {
   if (current_wx.humidity > 0) { char hb[5]; snprintf(hb, sizeof(hb), "h%02d", (int)current_wx.humidity); body += hb; }
   if (baro > 0) { char bb[10]; snprintf(bb, sizeof(bb), "b%05d", baro); body += bb; }
   
+  // Dodajemy parametr L (Luminancja) do ramki
+  if (lum_wm2 > 0) {
+      if (lum_wm2 > 999) lum_wm2 = 999;
+      char lb[6]; snprintf(lb, sizeof(lb), "L%03d", lum_wm2);
+      body += lb;
+  }
+
   // --- KOMENTARZ ---
   String comment = " RodosWX_2";
   comment += " Sig:" + String(current_wx.radio_rssi) + "dBm";
@@ -127,7 +140,7 @@ void send_aprs() {
 
   WiFiClient cl;
   if (cl.connect(APRS_HOST, APRS_PORT)) {
-    cl.printf("user %s pass %s vers RodosBME 1.5\n", APRS_CALLSIGN, APRS_PASSCODE);
+    cl.printf("user %s pass %s vers RodosBME 1.6\n", APRS_CALLSIGN, APRS_PASSCODE);
     delay(200);
     cl.println(packet);
     delay(500);
@@ -161,15 +174,12 @@ void setup() {
   
   int wifi_timeout = 0;
   while (WiFi.status() != WL_CONNECTED && wifi_timeout < 40) { 
-      delay(500); 
-      Serial.print("."); 
-      wifi_timeout++;
+      delay(500); Serial.print("."); wifi_timeout++;
   }
   
   if(WiFi.status() == WL_CONNECTED) {
       Serial.println(F(" WiFi OK"));
       configTime(0, 0, "pool.ntp.org");
-      // Czekamy na synchronizację czasu (niezbędne do poprawnego Timestampa)
       while (time(nullptr) < 100000) { delay(500); Serial.print("T"); }
       Serial.println(F(" Time OK"));
   }
@@ -185,9 +195,15 @@ void loop() {
       if (ws.sensor[0].w.temp_ok) current_wx.temp_c = ws.sensor[0].w.temp_c;
       if (ws.sensor[0].w.humidity_ok) current_wx.humidity = ws.sensor[0].w.humidity;
       if (ws.sensor[0].w.rain_ok) current_wx.rain_total_mm = ws.sensor[0].w.rain_mm;
+      
+      // ODCZYT UV oraz ŚWIATŁA (Dodano Light_klx)
       #if defined BRESSER_6_IN_1 || defined BRESSER_7_IN_1
         if (ws.sensor[0].w.uv_ok) current_wx.uv_index = ws.sensor[0].w.uv;
       #endif
+      #ifdef BRESSER_7_IN_1
+        if (ws.sensor[0].w.light_ok) current_wx.light_klx = ws.sensor[0].w.light_klx;
+      #endif
+
       current_wx.radio_rssi = ws.sensor[0].rssi;
       current_wx.battery_ok = ws.sensor[0].battery_ok;
 
@@ -197,7 +213,10 @@ void loop() {
           float g = ws.sensor[0].w.wind_gust_meter_sec;
           wind_speed_sum += s; wind_sample_count++;
           if (g > wind_gust_max_period) wind_gust_max_period = g;
-          Serial.printf("Wind: %.1f m/s | RSSI: %d dBm\n", s, current_wx.radio_rssi);
+          
+          // Debug w konsoli z Luxami
+          Serial.printf("Wind: %.1f m/s | RSSI: %d dBm | Lux: %.1f\n", 
+                        s, current_wx.radio_rssi, current_wx.light_klx);
       }
       current_wx.valid_data = true;
   }
