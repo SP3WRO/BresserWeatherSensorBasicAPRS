@@ -1,3 +1,6 @@
+RodosWX_2 - jedyny słuszny program dla stacji pogodowych garni/bresser wysyłający ramki do aprs-is.
+Testowany na ludziach po spożyciu i przed spożyciem dużych dawek alkoholu.
+
 Uwaga, program napisany WYŁĄCZNIE dla ESP8266 + CC1101 + BME280 (dla ciśnienia, którego bresser nie podaje)
 Co i jak:
 
